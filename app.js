@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('mainCanvas');
     const canvasContainer = document.getElementById('canvasContainer');
     const ctx = canvas.getContext('2d');
+    const marqueeToolBtn = document.getElementById('marqueeToolBtn');
+    const colorPalette = document.getElementById('colorPalette');
 
     // Size adjustment dialog elements
     const adjustSizeBtn = document.getElementById('adjustSizeBtn');
@@ -69,6 +71,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let history = [];
     let currentHistoryIndex = -1;
     const maxHistorySize = 20; // Maximum number of states to keep in history
+
+    // Marquee selection state
+    let isMarqueeToolActive = false;
+    let isDrawingSelection = false;
+    let selectionStartX = 0;
+    let selectionStartY = 0;
+    let selectionWidth = 0;
+    let selectionHeight = 0;
 
     // Function to save current state to history
     function saveToHistory() {
@@ -343,6 +353,41 @@ document.addEventListener('DOMContentLoaded', () => {
         // Draw the blurred image back to the main canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(tempCanvas, 0, 0);
+    }
+
+    // Function to draw selection rectangle
+    function drawSelection() {
+        // Clear previous selection
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Redraw the original image
+        if (originalImage) {
+            ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
+        }
+
+        // Draw selection rectangle
+        ctx.strokeStyle = '#00ff00';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]); // Create dashed line effect
+        ctx.strokeRect(selectionStartX, selectionStartY, selectionWidth, selectionHeight);
+        ctx.setLineDash([]); // Reset line dash
+    }
+
+    // Function to handle marquee tool selection
+    function handleMarqueeTool() {
+        isMarqueeToolActive = !isMarqueeToolActive;
+        marqueeToolBtn.classList.toggle('border-blue-500', isMarqueeToolActive);
+        colorPalette.classList.toggle('hidden', !isMarqueeToolActive);
+        
+        // Reset selection when deactivating tool
+        if (!isMarqueeToolActive) {
+            isDrawingSelection = false;
+            selectionStartX = 0;
+            selectionStartY = 0;
+            selectionWidth = 0;
+            selectionHeight = 0;
+            drawSelection();
+        }
     }
 
     // Initialize button states
@@ -718,5 +763,46 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Close dialog
         blurDialog.classList.add('hidden');
+    });
+
+    // Handle marquee tool button click
+    marqueeToolBtn.addEventListener('click', handleMarqueeTool);
+
+    // Handle canvas mouse events for marquee selection
+    canvas.addEventListener('mousedown', (e) => {
+        if (!isMarqueeToolActive || !originalImage) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        isDrawingSelection = true;
+        selectionStartX = x;
+        selectionStartY = y;
+        selectionWidth = 0;
+        selectionHeight = 0;
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (!isMarqueeToolActive || !isDrawingSelection || !originalImage) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        selectionWidth = x - selectionStartX;
+        selectionHeight = y - selectionStartY;
+        drawSelection();
+    });
+
+    canvas.addEventListener('mouseup', () => {
+        if (!isMarqueeToolActive || !isDrawingSelection) return;
+        isDrawingSelection = false;
+    });
+
+    // Handle canvas mouseleave
+    canvas.addEventListener('mouseleave', () => {
+        if (!isMarqueeToolActive || !isDrawingSelection) return;
+        isDrawingSelection = false;
     });
 }); 

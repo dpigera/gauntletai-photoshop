@@ -152,7 +152,11 @@
     <div class="flex h-[calc(100vh-3rem)]">
         <!-- Left Toolbar -->
         <div class="w-16 bg-white border-r border-gray-200 flex flex-col items-center py-4">
-            <!-- Toolbar items will go here -->
+            <button id="marqueeToolBtn" class="w-12 h-12 mb-4 flex items-center justify-center rounded hover:bg-gray-100 border-2 border-transparent" title="Select Marquee Tool">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h16v16H4V4z" />
+                </svg>
+            </button>
         </div>
 
         <!-- Main Canvas Area -->
@@ -164,7 +168,27 @@
 
         <!-- Right Sidebar -->
         <div class="w-64 bg-white border-l border-gray-200 p-4">
-            <!-- Sidebar content will go here -->
+            <div id="colorPalette" class="hidden">
+                <h3 class="text-sm font-medium text-gray-700 mb-3">Color Palette</h3>
+                <div class="grid grid-cols-4 gap-2">
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #FF0000" title="Red"></button>
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #FF7F00" title="Orange"></button>
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #FFFF00" title="Yellow"></button>
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #00FF00" title="Green"></button>
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #0000FF" title="Blue"></button>
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #4B0082" title="Indigo"></button>
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #9400D3" title="Violet"></button>
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #FF1493" title="Deep Pink"></button>
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #FF69B4" title="Hot Pink"></button>
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #FFB6C1" title="Light Pink"></button>
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #800000" title="Maroon"></button>
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #808000" title="Olive"></button>
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #008000" title="Dark Green"></button>
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #000080" title="Navy"></button>
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #800080" title="Purple"></button>
+                    <button class="w-8 h-8 rounded border border-gray-200" style="background-color: #808080" title="Gray"></button>
+                </div>
+            </div>
         </div>
     </div>
 
