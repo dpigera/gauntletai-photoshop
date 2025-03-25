@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileMenuBtn = document.getElementById('fileMenuBtn');
     const fileMenu = document.getElementById('fileMenu');
     const openFileBtn = document.getElementById('openFileBtn');
+    const downloadPngBtn = document.getElementById('downloadPngBtn');
     const fileInput = document.getElementById('fileInput');
     const canvas = document.getElementById('mainCanvas');
     const canvasContainer = document.getElementById('canvasContainer');
@@ -27,6 +28,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle Open button click
     openFileBtn.addEventListener('click', () => {
         fileInput.click();
+        fileMenu.classList.add('hidden');
+    });
+
+    // Handle Download as PNG button click
+    downloadPngBtn.addEventListener('click', () => {
+        // Create a temporary link element
+        const link = document.createElement('a');
+        link.download = 'image.png';
+        
+        // Convert canvas to PNG data URL
+        const dataUrl = canvas.toDataURL('image/png');
+        
+        // Set the link's href to the data URL
+        link.href = dataUrl;
+        
+        // Trigger the download
+        document.body.appendChild(link);
+        link.click();
+        
+        // Clean up
+        document.body.removeChild(link);
+        
+        // Close the menu
         fileMenu.classList.add('hidden');
     });
 
