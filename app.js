@@ -1115,6 +1115,9 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.addEventListener('mouseup', stopDrawing);
     canvas.addEventListener('mouseleave', stopDrawing);
 
+    // Add canvas click event listener for text tool
+    canvas.addEventListener('click', handleCanvasClick);
+
     // Handle Undo button click
     undoBtn.addEventListener('click', () => {
         if (currentHistoryIndex > 0) {
