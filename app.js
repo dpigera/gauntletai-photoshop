@@ -95,50 +95,37 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastX = 0;
     let lastY = 0;
 
-    // Menu elements
-    const aiMenuBtn = document.getElementById('aiMenuBtn');
-    
-    const aiMenu = document.getElementById('aiMenu');
-
-    // Get Generative Fill dialog elements
-    const generativeFillDialog = document.getElementById('generativeFillDialog');
-    const generativeFillBtn = document.getElementById('generativeFillBtn');
-    const cancelGenerateBtn = document.getElementById('cancelGenerateBtn');
-    const generateBtn = document.getElementById('generateBtn');
-
     // Function to hide all menus
     function hideAllMenus() {
         fileMenu.classList.add('hidden');
         editMenu.classList.add('hidden');
         imageMenu.classList.add('hidden');
         filterMenu.classList.add('hidden');
-        aiMenu.classList.add('hidden');
     }
 
     // Toggle menu functions
-    function toggleFileMenu() {
+    function toggleFileMenu(e) {
+        e.stopPropagation();
         hideAllMenus();
         fileMenu.classList.toggle('hidden');
     }
 
-    function toggleEditMenu() {
+    function toggleEditMenu(e) {
+        e.stopPropagation();
         hideAllMenus();
         editMenu.classList.toggle('hidden');
     }
 
-    function toggleImageMenu() {
+    function toggleImageMenu(e) {
+        e.stopPropagation();
         hideAllMenus();
         imageMenu.classList.toggle('hidden');
     }
 
-    function toggleFilterMenu() {
+    function toggleFilterMenu(e) {
+        e.stopPropagation();
         hideAllMenus();
         filterMenu.classList.toggle('hidden');
-    }
-
-    function toggleAIMenu() {
-        hideAllMenus();
-        aiMenu.classList.toggle('hidden');
     }
 
     // Add click event listeners for menu buttons
@@ -146,13 +133,19 @@ document.addEventListener('DOMContentLoaded', () => {
     editMenuBtn.addEventListener('click', toggleEditMenu);
     imageMenuBtn.addEventListener('click', toggleImageMenu);
     filterMenuBtn.addEventListener('click', toggleFilterMenu);
-    aiMenuBtn.addEventListener('click', toggleAIMenu);
 
     // Close menus when clicking outside
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.relative')) {
             hideAllMenus();
         }
+    });
+
+    // Prevent menu from closing when clicking inside
+    [fileMenu, editMenu, imageMenu, filterMenu].forEach(menu => {
+        menu.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
     });
 
     // Function to save current state to history
@@ -1105,102 +1098,5 @@ document.addEventListener('DOMContentLoaded', () => {
             updateButtonStates();
         }
         editMenu.classList.add('hidden');
-    });
-
-    // Handle Generative Fill button click
-    generativeFillBtn.addEventListener('click', () => {
-        generativeFillDialog.classList.remove('hidden');
-        aiMenu.classList.add('hidden');
-    });
-
-    // Handle Cancel button click
-    cancelGenerateBtn.addEventListener('click', () => {
-        generativeFillDialog.classList.add('hidden');
-    });
-
-    // Handle Generate button click
-    generateBtn.addEventListener('click', async () => {
-        const prompt = document.getElementById('generativePrompt').value.trim();
-        if (!prompt) return;
-
-        // Show loading state
-        const loadingOverlay = document.createElement('div');
-        loadingOverlay.style.position = 'absolute';
-        loadingOverlay.style.top = '0';
-        loadingOverlay.style.left = '0';
-        loadingOverlay.style.width = '100%';
-        loadingOverlay.style.height = '100%';
-        loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-        loadingOverlay.style.display = 'flex';
-        loadingOverlay.style.justifyContent = 'center';
-        loadingOverlay.style.alignItems = 'center';
-        loadingOverlay.style.color = 'white';
-        loadingOverlay.style.fontSize = '1.2em';
-        loadingOverlay.style.zIndex = '1000';
-        loadingOverlay.textContent = 'Generating image...';
-        canvasContainer.appendChild(loadingOverlay);
-
-        try {
-            const response = await fetch('https://api.openai.com/v1/images/generations', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${window.env.OPENAI_API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: "dall-e-3",
-                    prompt: prompt,
-                    n: 1,
-                    // DALL-E 3 only supports these sizes: 1024x1024, 1024x1792, or 1792x1024
-                    size: "1024x1024"
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to generate image');
-            }
-
-            const data = await response.json();
-            const imageUrl = data.data[0].url;
-
-            // Load the generated image
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-                // Clear canvas and draw new image, scaling to fit canvas dimensions
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                saveToHistory();
-            };
-            img.onerror = (error) => {
-                console.error('Error loading image:', error);
-                ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = 'white';
-                ctx.font = '20px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('Failed to load generated image. Please try again.', canvas.width / 2, canvas.height / 2);
-            };
-            
-            // Use a proxy service to fetch the image
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imageUrl)}`;
-            img.src = proxyUrl;
-
-            // Clear the prompt
-            document.getElementById('generativePrompt').value = '';
-        } catch (error) {
-            console.error('Error generating image:', error);
-            ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'white';
-            ctx.font = '20px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('Failed to generate image. Please try again.', canvas.width / 2, canvas.height / 2);
-        } finally {
-            // Remove loading overlay
-            loadingOverlay.remove();
-            // Hide the dialog
-            generativeFillDialog.style.display = 'none';
-        }
     });
 }); 
