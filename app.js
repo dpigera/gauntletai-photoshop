@@ -426,15 +426,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to handle text tool selection
     function handleTextTool() {
+        // Toggle text tool state
         isTextToolActive = !isTextToolActive;
-        textToolBtn.classList.toggle('border-blue-500', isTextToolActive);
-        colorPalette.classList.toggle('hidden', !isTextToolActive);
         
-        // Deactivate marquee tool if it's active
-        if (isMarqueeToolActive) {
+        // Deactivate other tools if text tool is being activated
+        if (isTextToolActive) {
+            isStarToolActive = false;
             isMarqueeToolActive = false;
-            marqueeToolBtn.classList.remove('border-blue-500');
         }
+        
+        // Update all tool button states
+        textToolBtn.classList.toggle('border-2', isTextToolActive);
+        textToolBtn.classList.toggle('border-blue-500', isTextToolActive);
+        starToolBtn.classList.remove('border-2', 'border-blue-500');
+        marqueeToolBtn.classList.remove('border-2', 'border-blue-500');
+        
+        // Show/hide color palette based on any tool being active
+        colorPalette.classList.toggle('hidden', !isTextToolActive);
     }
 
     // Function to handle canvas click for text input
@@ -503,15 +511,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to handle marquee tool selection
     function handleMarqueeTool() {
+        // Toggle marquee tool state
         isMarqueeToolActive = !isMarqueeToolActive;
-        marqueeToolBtn.classList.toggle('border-blue-500', isMarqueeToolActive);
-        colorPalette.classList.toggle('hidden', !isMarqueeToolActive);
         
-        // Deactivate text tool if it's active
-        if (isTextToolActive) {
+        // Deactivate other tools if marquee tool is being activated
+        if (isMarqueeToolActive) {
+            isStarToolActive = false;
             isTextToolActive = false;
-            textToolBtn.classList.remove('border-blue-500');
         }
+        
+        // Update all tool button states
+        marqueeToolBtn.classList.toggle('border-2', isMarqueeToolActive);
+        marqueeToolBtn.classList.toggle('border-blue-500', isMarqueeToolActive);
+        starToolBtn.classList.remove('border-2', 'border-blue-500');
+        textToolBtn.classList.remove('border-2', 'border-blue-500');
+        
+        // Show/hide color palette based on any tool being active
+        colorPalette.classList.toggle('hidden', !isMarqueeToolActive);
         
         // Reset selection when deactivating tool
         if (!isMarqueeToolActive) {
@@ -526,17 +542,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to handle star tool selection
     function handleStarTool() {
+        // Toggle star tool state
         isStarToolActive = !isStarToolActive;
-        isTextToolActive = false;
-        isMarqueeToolActive = false;
         
-        // Update button states
+        // Deactivate other tools if star tool is being activated
+        if (isStarToolActive) {
+            isTextToolActive = false;
+            isMarqueeToolActive = false;
+        }
+        
+        // Update all tool button states
         starToolBtn.classList.toggle('border-2', isStarToolActive);
         starToolBtn.classList.toggle('border-blue-500', isStarToolActive);
         textToolBtn.classList.remove('border-2', 'border-blue-500');
         marqueeToolBtn.classList.remove('border-2', 'border-blue-500');
         
-        // Show/hide color palette
+        // Show/hide color palette based on any tool being active
         colorPalette.classList.toggle('hidden', !isStarToolActive);
     }
 
