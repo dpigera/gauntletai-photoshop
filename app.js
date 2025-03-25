@@ -571,26 +571,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to draw star
     function drawStar(centerX, centerY, size) {
+        // Get the current canvas state
+        const currentState = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
         const spikes = 5;
         const outerRadius = size;
         const innerRadius = size / 2;
         
-        ctx.save();
-        ctx.beginPath();
-        ctx.translate(centerX, centerY);
-        ctx.moveTo(0, -outerRadius);
+        // Create a temporary canvas for the star
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        // Draw existing content
+        tempCtx.putImageData(currentState, 0, 0);
+        
+        // Draw the star
+        tempCtx.save();
+        tempCtx.beginPath();
+        tempCtx.translate(centerX, centerY);
+        tempCtx.moveTo(0, -outerRadius);
         
         for (let i = 0; i < spikes; i++) {
-            ctx.rotate(Math.PI / spikes);
-            ctx.lineTo(0, -innerRadius);
-            ctx.rotate(Math.PI / spikes);
-            ctx.lineTo(0, -outerRadius);
+            tempCtx.rotate(Math.PI / spikes);
+            tempCtx.lineTo(0, -innerRadius);
+            tempCtx.rotate(Math.PI / spikes);
+            tempCtx.lineTo(0, -outerRadius);
         }
         
-        ctx.closePath();
-        ctx.fillStyle = selectedColor;
-        ctx.fill();
-        ctx.restore();
+        tempCtx.closePath();
+        tempCtx.fillStyle = selectedColor;
+        tempCtx.fill();
+        tempCtx.restore();
+        
+        // Copy the result back to the main canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(tempCanvas, 0, 0);
         
         // Save to history
         saveToHistory();
@@ -1052,10 +1069,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         
-        // Save current canvas state
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        
-        // Draw star
         drawStar(x, y, 30);
     });
 
@@ -1067,10 +1080,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const y = e.clientY - rect.top;
         
         if (e.buttons === 1) { // Left mouse button is pressed
-            // Save current canvas state
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            
-            // Draw star
             drawStar(x, y, 30);
         }
     });
