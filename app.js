@@ -21,7 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvasContainer = document.getElementById('canvasContainer');
     const ctx = canvas.getContext('2d');
     const marqueeToolBtn = document.getElementById('marqueeToolBtn');
+    const textToolBtn = document.getElementById('textToolBtn');
     const colorPalette = document.getElementById('colorPalette');
+    const selectedColorBox = document.getElementById('selectedColorBox');
+    const selectedColorHex = document.getElementById('selectedColorHex');
 
     // Size adjustment dialog elements
     const adjustSizeBtn = document.getElementById('adjustSizeBtn');
@@ -72,13 +75,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentHistoryIndex = -1;
     const maxHistorySize = 20; // Maximum number of states to keep in history
 
-    // Marquee selection state
+    // Tool states
     let isMarqueeToolActive = false;
+    let isTextToolActive = false;
     let isDrawingSelection = false;
     let selectionStartX = 0;
     let selectionStartY = 0;
     let selectionWidth = 0;
     let selectionHeight = 0;
+    let selectedColor = '#000000'; // Initialize with black
+    let textInput = null;
 
     // Function to save current state to history
     function saveToHistory() {
@@ -373,11 +379,114 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.setLineDash([]); // Reset line dash
     }
 
+    // Function to handle color selection
+    function handleColorSelection(e) {
+        // Remove selected class from all color swatches
+        document.querySelectorAll('.color-swatch').forEach(swatch => {
+            swatch.classList.remove('border-4', 'border-blue-500', 'ring-4', 'ring-blue-500');
+        });
+        
+        // Add selected class to clicked swatch
+        e.target.classList.add('border-4', 'border-blue-500', 'ring-4', 'ring-blue-500');
+        
+        // Get the color from the background-color style
+        const color = e.target.style.backgroundColor;
+        
+        // Update selected color
+        selectedColor = color;
+        
+        // Update selected color box and hex code
+        selectedColorBox.style.backgroundColor = color;
+        selectedColorHex.textContent = rgbToHex(color);
+        
+        // Show an alert with the selected color
+        alert(`Color selected: ${rgbToHex(color)}`);
+    }
+
+    // Function to convert RGB color to HEX
+    function rgbToHex(rgb) {
+        // Handle rgb(r, g, b) format
+        if (rgb.startsWith('rgb')) {
+            const matches = rgb.match(/\d+/g);
+            if (matches && matches.length === 3) {
+                const [r, g, b] = matches.map(Number);
+                return '#' + [r, g, b].map(x => {
+                    const hex = x.toString(16);
+                    return hex.length === 1 ? '0' + hex : hex;
+                }).join('');
+            }
+        }
+        // Handle hex format
+        return rgb;
+    }
+
+    // Function to handle text tool selection
+    function handleTextTool() {
+        isTextToolActive = !isTextToolActive;
+        textToolBtn.classList.toggle('border-blue-500', isTextToolActive);
+        colorPalette.classList.toggle('hidden', !isTextToolActive);
+        
+        // Deactivate marquee tool if it's active
+        if (isMarqueeToolActive) {
+            isMarqueeToolActive = false;
+            marqueeToolBtn.classList.remove('border-blue-500');
+        }
+    }
+
+    // Function to handle canvas click for text input
+    function handleCanvasClick(e) {
+        if (!isTextToolActive) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // Create text input element
+        textInput = document.createElement('input');
+        textInput.type = 'text';
+        textInput.className = 'absolute border-none outline-none bg-transparent text-black text-lg';
+        textInput.style.left = `${x}px`;
+        textInput.style.top = `${y}px`;
+        textInput.style.fontSize = '20px';
+        textInput.style.fontFamily = 'Arial';
+        textInput.style.color = selectedColor;
+        textInput.style.zIndex = '1000';
+
+        // Add input to canvas container
+        canvasContainer.appendChild(textInput);
+        textInput.focus();
+
+        // Handle text input completion
+        textInput.addEventListener('blur', () => {
+            if (textInput.value.trim()) {
+                // Draw text on canvas
+                ctx.font = '20px Arial';
+                ctx.fillStyle = selectedColor;
+                ctx.fillText(textInput.value, x, y);
+                saveState();
+            }
+            textInput.remove();
+        });
+
+        // Handle Enter key
+        textInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                textInput.blur();
+            }
+        });
+    }
+
     // Function to handle marquee tool selection
     function handleMarqueeTool() {
         isMarqueeToolActive = !isMarqueeToolActive;
         marqueeToolBtn.classList.toggle('border-blue-500', isMarqueeToolActive);
         colorPalette.classList.toggle('hidden', !isMarqueeToolActive);
+        
+        // Deactivate text tool if it's active
+        if (isTextToolActive) {
+            isTextToolActive = false;
+            textToolBtn.classList.remove('border-blue-500');
+        }
         
         // Reset selection when deactivating tool
         if (!isMarqueeToolActive) {
@@ -765,44 +874,13 @@ document.addEventListener('DOMContentLoaded', () => {
         blurDialog.classList.add('hidden');
     });
 
-    // Handle marquee tool button click
+    // Add event listeners for color swatches
+    document.querySelectorAll('.color-swatch').forEach(swatch => {
+        swatch.addEventListener('click', handleColorSelection);
+    });
+
+    // Add event listeners for tools
+    textToolBtn.addEventListener('click', handleTextTool);
     marqueeToolBtn.addEventListener('click', handleMarqueeTool);
-
-    // Handle canvas mouse events for marquee selection
-    canvas.addEventListener('mousedown', (e) => {
-        if (!isMarqueeToolActive || !originalImage) return;
-
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        isDrawingSelection = true;
-        selectionStartX = x;
-        selectionStartY = y;
-        selectionWidth = 0;
-        selectionHeight = 0;
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-        if (!isMarqueeToolActive || !isDrawingSelection || !originalImage) return;
-
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        selectionWidth = x - selectionStartX;
-        selectionHeight = y - selectionStartY;
-        drawSelection();
-    });
-
-    canvas.addEventListener('mouseup', () => {
-        if (!isMarqueeToolActive || !isDrawingSelection) return;
-        isDrawingSelection = false;
-    });
-
-    // Handle canvas mouseleave
-    canvas.addEventListener('mouseleave', () => {
-        if (!isMarqueeToolActive || !isDrawingSelection) return;
-        isDrawingSelection = false;
-    });
+    canvas.addEventListener('click', handleCanvasClick);
 }); 
