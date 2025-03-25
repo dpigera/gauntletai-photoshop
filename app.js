@@ -52,6 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Black and White button
     const blackAndWhiteBtn = document.getElementById('blackAndWhiteBtn');
     const sepiaBtn = document.getElementById('sepiaBtn');
+    const blurBtn = document.getElementById('blurBtn');
+    const blurDialog = document.getElementById('blurDialog');
+    const blurSlider = document.getElementById('blurSlider');
+    const blurValue = document.getElementById('blurValue');
+    const cancelBlurBtn = document.getElementById('cancelBlurBtn');
+    const saveBlurBtn = document.getElementById('saveBlurBtn');
 
     // Store original image data for resizing
     let originalImage = null;
@@ -317,6 +323,26 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Close the filter menu
         filterMenu.classList.add('hidden');
+    }
+
+    // Function to apply blur effect
+    function applyBlur(radius) {
+        if (!originalCanvasState) return;
+
+        // Create a temporary canvas for the image data
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(originalCanvasState, 0, 0);
+
+        // Apply blur using canvas filter
+        tempCtx.filter = `blur(${radius}px)`;
+        tempCtx.drawImage(originalCanvasState, 0, 0);
+
+        // Draw the blurred image back to the main canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(tempCanvas, 0, 0);
     }
 
     // Initialize button states
@@ -649,5 +675,48 @@ document.addEventListener('DOMContentLoaded', () => {
     sepiaBtn.addEventListener('click', () => {
         if (!originalImage) return;
         applySepia();
+    });
+
+    // Handle Blur button click
+    blurBtn.addEventListener('click', () => {
+        if (!originalImage) return;
+        
+        // Store current canvas state
+        originalCanvasState = document.createElement('canvas');
+        originalCanvasState.width = canvas.width;
+        originalCanvasState.height = canvas.height;
+        originalCanvasState.getContext('2d').drawImage(canvas, 0, 0);
+        
+        // Reset slider
+        blurSlider.value = 0;
+        blurValue.textContent = '0px';
+        
+        // Show dialog
+        blurDialog.classList.remove('hidden');
+        filterMenu.classList.add('hidden');
+    });
+
+    // Handle blur slider change
+    blurSlider.addEventListener('input', () => {
+        const radius = parseInt(blurSlider.value);
+        blurValue.textContent = `${radius}px`;
+        applyBlur(radius);
+    });
+
+    // Handle Cancel button click for blur dialog
+    cancelBlurBtn.addEventListener('click', () => {
+        if (originalCanvasState) {
+            ctx.drawImage(originalCanvasState, 0, 0);
+        }
+        blurDialog.classList.add('hidden');
+    });
+
+    // Handle Save button click for blur dialog
+    saveBlurBtn.addEventListener('click', () => {
+        // Save state to history
+        saveToHistory();
+        
+        // Close dialog
+        blurDialog.classList.add('hidden');
     });
 }); 
