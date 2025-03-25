@@ -27,11 +27,32 @@
         <div class="relative">
             <button id="imageMenuBtn" class="px-3 py-1 hover:bg-gray-100 rounded">Image</button>
             <div id="imageMenu" class="hidden absolute top-full left-0 bg-white border border-gray-200 shadow-lg rounded mt-1 min-w-[160px]">
-                <!-- Image menu items will go here -->
+                <button id="adjustSizeBtn" class="block w-full text-left px-4 py-2 hover:bg-gray-100">Adjust Size</button>
             </div>
         </div>
         <input type="file" id="fileInput" accept="image/*" class="hidden">
     </header>
+
+    <!-- Size Adjustment Dialog -->
+    <div id="sizeDialog" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-6 w-[400px]">
+            <h2 class="text-xl font-semibold mb-4">Adjust Image Size</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Width (px)</label>
+                    <input type="number" id="widthInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Height (px)</label>
+                    <input type="number" id="heightInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="cancelSizeBtn" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Cancel</button>
+                <button id="saveSizeBtn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save</button>
+            </div>
+        </div>
+    </div>
 
     <div class="flex h-[calc(100vh-3rem)]">
         <!-- Left Toolbar -->

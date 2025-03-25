@@ -17,6 +17,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvasContainer = document.getElementById('canvasContainer');
     const ctx = canvas.getContext('2d');
 
+    // Size adjustment dialog elements
+    const adjustSizeBtn = document.getElementById('adjustSizeBtn');
+    const sizeDialog = document.getElementById('sizeDialog');
+    const widthInput = document.getElementById('widthInput');
+    const heightInput = document.getElementById('heightInput');
+    const cancelSizeBtn = document.getElementById('cancelSizeBtn');
+    const saveSizeBtn = document.getElementById('saveSizeBtn');
+
+    // Store original image data for resizing
+    let originalImage = null;
+
     // Toggle file menu
     fileMenuBtn.addEventListener('click', () => {
         fileMenu.classList.toggle('hidden');
@@ -86,6 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = (event) => {
                 const img = new Image();
                 img.onload = () => {
+                    // Store original image for resizing
+                    originalImage = img;
+                    
                     // Calculate dimensions to fit the image while maintaining aspect ratio
                     const maxWidth = window.innerWidth * 0.7; // 70% of window width
                     const maxHeight = window.innerHeight * 0.8; // 80% of window height
@@ -118,5 +132,71 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             reader.readAsDataURL(file);
         }
+    });
+
+    // Handle Adjust Size button click
+    adjustSizeBtn.addEventListener('click', () => {
+        if (!originalImage) return;
+        
+        // Set current dimensions in inputs
+        widthInput.value = canvas.width;
+        heightInput.value = canvas.height;
+        
+        // Show dialog
+        sizeDialog.classList.remove('hidden');
+        imageMenu.classList.add('hidden');
+    });
+
+    // Handle width input change
+    widthInput.addEventListener('input', () => {
+        if (!originalImage) return;
+        
+        const newWidth = parseInt(widthInput.value);
+        if (isNaN(newWidth)) return;
+        
+        // Calculate new height maintaining aspect ratio
+        const newHeight = Math.round((newWidth * originalImage.height) / originalImage.width);
+        heightInput.value = newHeight;
+    });
+
+    // Handle height input change
+    heightInput.addEventListener('input', () => {
+        if (!originalImage) return;
+        
+        const newHeight = parseInt(heightInput.value);
+        if (isNaN(newHeight)) return;
+        
+        // Calculate new width maintaining aspect ratio
+        const newWidth = Math.round((newHeight * originalImage.width) / originalImage.height);
+        widthInput.value = newWidth;
+    });
+
+    // Handle Cancel button click
+    cancelSizeBtn.addEventListener('click', () => {
+        sizeDialog.classList.add('hidden');
+    });
+
+    // Handle Save button click
+    saveSizeBtn.addEventListener('click', () => {
+        if (!originalImage) return;
+        
+        const newWidth = parseInt(widthInput.value);
+        const newHeight = parseInt(heightInput.value);
+        
+        if (isNaN(newWidth) || isNaN(newHeight)) return;
+        
+        // Update canvas dimensions
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        
+        // Redraw image with new dimensions
+        ctx.drawImage(originalImage, 0, 0, newWidth, newHeight);
+        
+        // Update container size
+        canvasContainer.style.width = `${newWidth}px`;
+        canvasContainer.style.height = `${newHeight}px`;
+        
+        // Close dialog
+        sizeDialog.classList.add('hidden');
     });
 }); 
