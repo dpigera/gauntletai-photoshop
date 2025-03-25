@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Black and White button
     const blackAndWhiteBtn = document.getElementById('blackAndWhiteBtn');
+    const sepiaBtn = document.getElementById('sepiaBtn');
 
     // Store original image data for resizing
     let originalImage = null;
@@ -263,6 +264,49 @@ document.addEventListener('DOMContentLoaded', () => {
             data[i] = luminance;     // Red
             data[i + 1] = luminance; // Green
             data[i + 2] = luminance; // Blue
+        }
+
+        // Put the modified image data back on the canvas
+        ctx.putImageData(imageData, 0, 0);
+
+        // Save state to history
+        saveToHistory();
+        
+        // Close the filter menu
+        filterMenu.classList.add('hidden');
+    }
+
+    // Function to apply sepia filter
+    function applySepia() {
+        if (!originalImage) return;
+
+        // Create a temporary canvas for the image data
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(canvas, 0, 0);
+
+        // Get the image data
+        const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        // Apply sepia effect
+        for (let i = 0; i < data.length; i += 4) {
+            // Get RGB values
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+
+            // Calculate sepia values
+            const sepiaR = (r * 0.393) + (g * 0.769) + (b * 0.189);
+            const sepiaG = (r * 0.349) + (g * 0.686) + (b * 0.168);
+            const sepiaB = (r * 0.272) + (g * 0.534) + (b * 0.131);
+
+            // Update RGB values with sepia effect
+            data[i] = Math.min(255, sepiaR);     // Red
+            data[i + 1] = Math.min(255, sepiaG); // Green
+            data[i + 2] = Math.min(255, sepiaB); // Blue
         }
 
         // Put the modified image data back on the canvas
@@ -599,5 +643,11 @@ document.addEventListener('DOMContentLoaded', () => {
     blackAndWhiteBtn.addEventListener('click', () => {
         if (!originalImage) return;
         applyBlackAndWhite();
+    });
+
+    // Handle Sepia button click
+    sepiaBtn.addEventListener('click', () => {
+        if (!originalImage) return;
+        applySepia();
     });
 }); 
