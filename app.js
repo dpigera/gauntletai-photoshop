@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageMenu = document.getElementById('imageMenu');
     const openFileBtn = document.getElementById('openFileBtn');
     const downloadPngBtn = document.getElementById('downloadPngBtn');
+    const undoBtn = document.getElementById('undoBtn');
     const fileInput = document.getElementById('fileInput');
     const canvas = document.getElementById('mainCanvas');
     const canvasContainer = document.getElementById('canvasContainer');
@@ -27,6 +28,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Store original image data for resizing
     let originalImage = null;
+
+    // History management
+    let history = [];
+    let currentHistoryIndex = -1;
+    const maxHistorySize = 20; // Maximum number of states to keep in history
+
+    // Function to save current state to history
+    function saveToHistory() {
+        // Remove any states after the current index
+        if (currentHistoryIndex < history.length - 1) {
+            history = history.slice(0, currentHistoryIndex + 1);
+        }
+
+        // Add current state to history
+        const state = {
+            imageData: canvas.toDataURL(),
+            width: canvas.width,
+            height: canvas.height
+        };
+        history.push(state);
+
+        // Limit history size
+        if (history.length > maxHistorySize) {
+            history.shift();
+        } else {
+            currentHistoryIndex++;
+        }
+
+        // Update undo button state
+        updateUndoButtonState();
+    }
+
+    // Function to update undo button state
+    function updateUndoButtonState() {
+        const hasHistory = history.length > 0 && currentHistoryIndex > 0;
+        undoBtn.disabled = !hasHistory;
+        undoBtn.classList.toggle('opacity-50', !hasHistory);
+        undoBtn.classList.toggle('cursor-not-allowed', !hasHistory);
+    }
+
+    // Function to restore state from history
+    function restoreState(index) {
+        if (index < 0 || index >= history.length) return;
+
+        const state = history[index];
+        const img = new Image();
+        img.onload = () => {
+            canvas.width = state.width;
+            canvas.height = state.height;
+            canvasContainer.style.width = `${state.width}px`;
+            canvasContainer.style.height = `${state.height}px`;
+            ctx.drawImage(img, 0, 0);
+        };
+        img.src = state.imageData;
+    }
+
+    // Initialize undo button state
+    updateUndoButtonState();
 
     // Toggle file menu
     fileMenuBtn.addEventListener('click', () => {
@@ -58,6 +117,16 @@ document.addEventListener('DOMContentLoaded', () => {
             editMenu.classList.add('hidden');
             imageMenu.classList.add('hidden');
         }
+    });
+
+    // Handle Undo button click
+    undoBtn.addEventListener('click', () => {
+        if (currentHistoryIndex > 0) {
+            currentHistoryIndex--;
+            restoreState(currentHistoryIndex);
+            updateUndoButtonState();
+        }
+        editMenu.classList.add('hidden');
     });
 
     // Handle Open button click
@@ -127,6 +196,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Update container size
                     canvasContainer.style.width = `${width}px`;
                     canvasContainer.style.height = `${height}px`;
+
+                    // Save initial state to history
+                    saveToHistory();
                 };
                 img.src = event.target.result;
             };
@@ -195,6 +267,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update container size
         canvasContainer.style.width = `${newWidth}px`;
         canvasContainer.style.height = `${newHeight}px`;
+        
+        // Save state to history
+        saveToHistory();
         
         // Close dialog
         sizeDialog.classList.add('hidden');
