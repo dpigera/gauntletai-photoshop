@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Star tool elements
     const starToolBtn = document.getElementById('starToolBtn');
+    const paintbrushToolBtn = document.getElementById('paintbrushToolBtn');
 
     // Store original image data for resizing
     let originalImage = null;
@@ -89,6 +90,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedColor = '#000000'; // Initialize with black
     let textInput = null;
     let isStarToolActive = false;
+    let isPaintbrushToolActive = false;
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
 
     // Function to save current state to history
     function saveToHistory() {
@@ -402,9 +407,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update selected color box and hex code
         selectedColorBox.style.backgroundColor = color;
         selectedColorHex.textContent = rgbToHex(color);
-        
-        // Show an alert with the selected color
-        alert(`Color selected: ${rgbToHex(color)}`);
     }
 
     // Function to convert RGB color to HEX
@@ -433,6 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isTextToolActive) {
             isStarToolActive = false;
             isMarqueeToolActive = false;
+            isPaintbrushToolActive = false;
         }
         
         // Update all tool button states
@@ -440,6 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
         textToolBtn.classList.toggle('border-blue-500', isTextToolActive);
         starToolBtn.classList.remove('border-2', 'border-blue-500');
         marqueeToolBtn.classList.remove('border-2', 'border-blue-500');
+        paintbrushToolBtn.classList.remove('border-2', 'border-blue-500');
         
         // Show/hide color palette based on any tool being active
         colorPalette.classList.toggle('hidden', !isTextToolActive);
@@ -518,6 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isMarqueeToolActive) {
             isStarToolActive = false;
             isTextToolActive = false;
+            isPaintbrushToolActive = false;
         }
         
         // Update all tool button states
@@ -525,6 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
         marqueeToolBtn.classList.toggle('border-blue-500', isMarqueeToolActive);
         starToolBtn.classList.remove('border-2', 'border-blue-500');
         textToolBtn.classList.remove('border-2', 'border-blue-500');
+        paintbrushToolBtn.classList.remove('border-2', 'border-blue-500');
         
         // Show/hide color palette based on any tool being active
         colorPalette.classList.toggle('hidden', !isMarqueeToolActive);
@@ -549,6 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isStarToolActive) {
             isTextToolActive = false;
             isMarqueeToolActive = false;
+            isPaintbrushToolActive = false;
         }
         
         // Update all tool button states
@@ -556,6 +563,7 @@ document.addEventListener('DOMContentLoaded', () => {
         starToolBtn.classList.toggle('border-blue-500', isStarToolActive);
         textToolBtn.classList.remove('border-2', 'border-blue-500');
         marqueeToolBtn.classList.remove('border-2', 'border-blue-500');
+        paintbrushToolBtn.classList.remove('border-2', 'border-blue-500');
         
         // Show/hide color palette based on any tool being active
         colorPalette.classList.toggle('hidden', !isStarToolActive);
@@ -585,6 +593,67 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.restore();
         
         // Save to history
+        saveToHistory();
+    }
+
+    // Function to handle paintbrush tool selection
+    function handlePaintbrushTool() {
+        // Toggle paintbrush tool state
+        isPaintbrushToolActive = !isPaintbrushToolActive;
+        
+        // Deactivate other tools if paintbrush tool is being activated
+        if (isPaintbrushToolActive) {
+            isTextToolActive = false;
+            isMarqueeToolActive = false;
+            isStarToolActive = false;
+        }
+        
+        // Update all tool button states
+        paintbrushToolBtn.classList.toggle('border-2', isPaintbrushToolActive);
+        paintbrushToolBtn.classList.toggle('border-blue-500', isPaintbrushToolActive);
+        textToolBtn.classList.remove('border-2', 'border-blue-500');
+        marqueeToolBtn.classList.remove('border-2', 'border-blue-500');
+        starToolBtn.classList.remove('border-2', 'border-blue-500');
+        
+        // Show/hide color palette based on any tool being active
+        colorPalette.classList.toggle('hidden', !isPaintbrushToolActive);
+    }
+
+    // Function to start drawing
+    function startDrawing(e) {
+        if (!isPaintbrushToolActive) return;
+        
+        isDrawing = true;
+        const rect = canvas.getBoundingClientRect();
+        lastX = e.clientX - rect.left;
+        lastY = e.clientY - rect.top;
+    }
+
+    // Function to draw with paintbrush
+    function draw(e) {
+        if (!isPaintbrushToolActive || !isDrawing) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const currentX = e.clientX - rect.left;
+        const currentY = e.clientY - rect.top;
+        
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(currentX, currentY);
+        ctx.strokeStyle = selectedColor;
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        
+        lastX = currentX;
+        lastY = currentY;
+    }
+
+    // Function to stop drawing
+    function stopDrawing() {
+        if (!isPaintbrushToolActive || !isDrawing) return;
+        
+        isDrawing = false;
         saveToHistory();
     }
 
@@ -973,6 +1042,7 @@ document.addEventListener('DOMContentLoaded', () => {
     marqueeToolBtn.addEventListener('click', handleMarqueeTool);
     canvas.addEventListener('click', handleCanvasClick);
     starToolBtn.addEventListener('click', handleStarTool);
+    paintbrushToolBtn.addEventListener('click', handlePaintbrushTool);
 
     // Add mouse events for star drawing
     canvas.addEventListener('mousedown', (e) => {
@@ -1004,4 +1074,10 @@ document.addEventListener('DOMContentLoaded', () => {
             drawStar(x, y, 30);
         }
     });
+
+    // Add event listeners for paintbrush tool
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseleave', stopDrawing);
 }); 
