@@ -95,6 +95,60 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastX = 0;
     let lastY = 0;
 
+    // Menu elements
+    const aiMenuBtn = document.getElementById('aiMenuBtn');
+    
+    const aiMenu = document.getElementById('aiMenu');
+
+    // Function to hide all menus
+    function hideAllMenus() {
+        fileMenu.classList.add('hidden');
+        editMenu.classList.add('hidden');
+        imageMenu.classList.add('hidden');
+        filterMenu.classList.add('hidden');
+        aiMenu.classList.add('hidden');
+    }
+
+    // Toggle menu functions
+    function toggleFileMenu() {
+        hideAllMenus();
+        fileMenu.classList.toggle('hidden');
+    }
+
+    function toggleEditMenu() {
+        hideAllMenus();
+        editMenu.classList.toggle('hidden');
+    }
+
+    function toggleImageMenu() {
+        hideAllMenus();
+        imageMenu.classList.toggle('hidden');
+    }
+
+    function toggleFilterMenu() {
+        hideAllMenus();
+        filterMenu.classList.toggle('hidden');
+    }
+
+    function toggleAIMenu() {
+        hideAllMenus();
+        aiMenu.classList.toggle('hidden');
+    }
+
+    // Add click event listeners for menu buttons
+    fileMenuBtn.addEventListener('click', toggleFileMenu);
+    editMenuBtn.addEventListener('click', toggleEditMenu);
+    imageMenuBtn.addEventListener('click', toggleImageMenu);
+    filterMenuBtn.addEventListener('click', toggleFilterMenu);
+    aiMenuBtn.addEventListener('click', toggleAIMenu);
+
+    // Close menus when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.relative')) {
+            hideAllMenus();
+        }
+    });
+
     // Function to save current state to history
     function saveToHistory() {
         // Remove any states after the current index
@@ -677,69 +731,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize button states
     updateButtonStates();
 
-    // Toggle file menu
-    fileMenuBtn.addEventListener('click', () => {
-        fileMenu.classList.toggle('hidden');
-        editMenu.classList.add('hidden'); // Close other menus
-        imageMenu.classList.add('hidden');
-    });
-
-    // Toggle edit menu
-    editMenuBtn.addEventListener('click', () => {
-        editMenu.classList.toggle('hidden');
-        fileMenu.classList.add('hidden'); // Close other menus
-        imageMenu.classList.add('hidden');
-    });
-
-    // Toggle image menu
-    imageMenuBtn.addEventListener('click', () => {
-        imageMenu.classList.toggle('hidden');
-        fileMenu.classList.add('hidden'); // Close other menus
-        editMenu.classList.add('hidden');
-        filterMenu.classList.add('hidden');
-    });
-
-    // Toggle filter menu
-    filterMenuBtn.addEventListener('click', () => {
-        filterMenu.classList.toggle('hidden');
-        fileMenu.classList.add('hidden'); // Close other menus
-        editMenu.classList.add('hidden');
-        imageMenu.classList.add('hidden');
-    });
-
-    // Close menus when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!fileMenuBtn.contains(e.target) && !fileMenu.contains(e.target) &&
-            !editMenuBtn.contains(e.target) && !editMenu.contains(e.target) &&
-            !imageMenuBtn.contains(e.target) && !imageMenu.contains(e.target) &&
-            !filterMenuBtn.contains(e.target) && !filterMenu.contains(e.target)) {
-            fileMenu.classList.add('hidden');
-            editMenu.classList.add('hidden');
-            imageMenu.classList.add('hidden');
-            filterMenu.classList.add('hidden');
-        }
-    });
-
-    // Handle Undo button click
-    undoBtn.addEventListener('click', () => {
-        if (currentHistoryIndex > 0) {
-            currentHistoryIndex--;
-            restoreState(currentHistoryIndex);
-            updateButtonStates();
-        }
-        editMenu.classList.add('hidden');
-    });
-
-    // Handle Redo button click
-    redoBtn.addEventListener('click', () => {
-        if (currentHistoryIndex < history.length - 1) {
-            currentHistoryIndex++;
-            restoreState(currentHistoryIndex);
-            updateButtonStates();
-        }
-        editMenu.classList.add('hidden');
-    });
-
     // Handle Open button click
     openFileBtn.addEventListener('click', () => {
         fileInput.click();
@@ -1089,4 +1080,24 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stopDrawing);
     canvas.addEventListener('mouseleave', stopDrawing);
+
+    // Handle Undo button click
+    undoBtn.addEventListener('click', () => {
+        if (currentHistoryIndex > 0) {
+            currentHistoryIndex--;
+            restoreState(currentHistoryIndex);
+            updateButtonStates();
+        }
+        editMenu.classList.add('hidden');
+    });
+
+    // Handle Redo button click
+    redoBtn.addEventListener('click', () => {
+        if (currentHistoryIndex < history.length - 1) {
+            currentHistoryIndex++;
+            restoreState(currentHistoryIndex);
+            updateButtonStates();
+        }
+        editMenu.classList.add('hidden');
+    });
 }); 
