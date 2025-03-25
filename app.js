@@ -95,6 +95,23 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastX = 0;
     let lastY = 0;
 
+    // Tool elements
+    const tools = [
+        { id: 'moveTool', name: 'Move Tool' },
+        { id: 'cropTool', name: 'Crop Tool' },
+        { id: 'selectTool', name: 'Select Tool' },
+        { id: 'brushTool', name: 'Brush Tool' },
+        { id: 'eyeToolBtn', name: 'Eye Tool' },
+        { id: 'eraserTool', name: 'Eraser Tool' },
+        { id: 'textTool', name: 'Text Tool' },
+        { id: 'shapeTool', name: 'Shape Tool' },
+        { id: 'gradientTool', name: 'Gradient Tool' },
+        { id: 'blurTool', name: 'Blur Tool' },
+        { id: 'cloneTool', name: 'Clone Tool' },
+        { id: 'handTool', name: 'Hand Tool' },
+        { id: 'zoomTool', name: 'Zoom Tool' }
+    ];
+
     // Function to hide all menus
     function hideAllMenus() {
         fileMenu.classList.add('hidden');
@@ -481,24 +498,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to handle text tool selection
     function handleTextTool() {
-        // Toggle text tool state
-        isTextToolActive = !isTextToolActive;
+        // Deactivate all other tools first
+        isStarToolActive = false;
+        isMarqueeToolActive = false;
+        isPaintbrushToolActive = false;
+        isTextToolActive = true;
         
-        // Deactivate other tools if text tool is being activated
-        if (isTextToolActive) {
-            isStarToolActive = false;
-            isMarqueeToolActive = false;
-            isPaintbrushToolActive = false;
-        }
+        // Remove active state from all tool buttons
+        [textToolBtn, starToolBtn, marqueeToolBtn, paintbrushToolBtn].forEach(btn => {
+            btn.classList.remove('border-2', 'border-blue-500');
+        });
         
-        // Update all tool button states
-        textToolBtn.classList.toggle('border-2', isTextToolActive);
-        textToolBtn.classList.toggle('border-blue-500', isTextToolActive);
-        starToolBtn.classList.remove('border-2', 'border-blue-500');
-        marqueeToolBtn.classList.remove('border-2', 'border-blue-500');
-        paintbrushToolBtn.classList.remove('border-2', 'border-blue-500');
+        // Add active state only to text tool
+        textToolBtn.classList.add('border-2', 'border-blue-500');
         
-        // Show/hide color palette based on any tool being active
+        // Show/hide color palette based on text tool being active
         colorPalette.classList.toggle('hidden', !isTextToolActive);
     }
 
@@ -568,24 +582,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to handle marquee tool selection
     function handleMarqueeTool() {
-        // Toggle marquee tool state
-        isMarqueeToolActive = !isMarqueeToolActive;
+        // Deactivate all other tools first
+        isStarToolActive = false;
+        isTextToolActive = false;
+        isPaintbrushToolActive = false;
+        isMarqueeToolActive = true;
         
-        // Deactivate other tools if marquee tool is being activated
-        if (isMarqueeToolActive) {
-            isStarToolActive = false;
-            isTextToolActive = false;
-            isPaintbrushToolActive = false;
-        }
+        // Remove active state from all tool buttons
+        [textToolBtn, starToolBtn, marqueeToolBtn, paintbrushToolBtn].forEach(btn => {
+            btn.classList.remove('border-2', 'border-blue-500');
+        });
         
-        // Update all tool button states
-        marqueeToolBtn.classList.toggle('border-2', isMarqueeToolActive);
-        marqueeToolBtn.classList.toggle('border-blue-500', isMarqueeToolActive);
-        starToolBtn.classList.remove('border-2', 'border-blue-500');
-        textToolBtn.classList.remove('border-2', 'border-blue-500');
-        paintbrushToolBtn.classList.remove('border-2', 'border-blue-500');
+        // Add active state only to marquee tool
+        marqueeToolBtn.classList.add('border-2', 'border-blue-500');
         
-        // Show/hide color palette based on any tool being active
+        // Show/hide color palette based on marquee tool being active
         colorPalette.classList.toggle('hidden', !isMarqueeToolActive);
         
         // Reset selection when deactivating tool
@@ -601,24 +612,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to handle star tool selection
     function handleStarTool() {
-        // Toggle star tool state
-        isStarToolActive = !isStarToolActive;
+        // Deactivate all other tools first
+        isTextToolActive = false;
+        isMarqueeToolActive = false;
+        isPaintbrushToolActive = false;
+        isStarToolActive = true;
         
-        // Deactivate other tools if star tool is being activated
-        if (isStarToolActive) {
-            isTextToolActive = false;
-            isMarqueeToolActive = false;
-            isPaintbrushToolActive = false;
-        }
+        // Remove active state from all tool buttons
+        [textToolBtn, starToolBtn, marqueeToolBtn, paintbrushToolBtn].forEach(btn => {
+            btn.classList.remove('border-2', 'border-blue-500');
+        });
         
-        // Update all tool button states
-        starToolBtn.classList.toggle('border-2', isStarToolActive);
-        starToolBtn.classList.toggle('border-blue-500', isStarToolActive);
-        textToolBtn.classList.remove('border-2', 'border-blue-500');
-        marqueeToolBtn.classList.remove('border-2', 'border-blue-500');
-        paintbrushToolBtn.classList.remove('border-2', 'border-blue-500');
+        // Add active state only to star tool
+        starToolBtn.classList.add('border-2', 'border-blue-500');
         
-        // Show/hide color palette based on any tool being active
+        // Show/hide color palette based on star tool being active
         colorPalette.classList.toggle('hidden', !isStarToolActive);
     }
 
@@ -668,24 +676,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to handle paintbrush tool selection
     function handlePaintbrushTool() {
-        // Toggle paintbrush tool state
-        isPaintbrushToolActive = !isPaintbrushToolActive;
+        // Deactivate all other tools first
+        isTextToolActive = false;
+        isMarqueeToolActive = false;
+        isStarToolActive = false;
+        isPaintbrushToolActive = true;
         
-        // Deactivate other tools if paintbrush tool is being activated
-        if (isPaintbrushToolActive) {
-            isTextToolActive = false;
-            isMarqueeToolActive = false;
-            isStarToolActive = false;
-        }
+        // Remove active state from all tool buttons
+        [textToolBtn, starToolBtn, marqueeToolBtn, paintbrushToolBtn].forEach(btn => {
+            btn.classList.remove('border-2', 'border-blue-500');
+        });
         
-        // Update all tool button states
-        paintbrushToolBtn.classList.toggle('border-2', isPaintbrushToolActive);
-        paintbrushToolBtn.classList.toggle('border-blue-500', isPaintbrushToolActive);
-        textToolBtn.classList.remove('border-2', 'border-blue-500');
-        marqueeToolBtn.classList.remove('border-2', 'border-blue-500');
-        starToolBtn.classList.remove('border-2', 'border-blue-500');
+        // Add active state only to paintbrush tool
+        paintbrushToolBtn.classList.add('border-2', 'border-blue-500');
         
-        // Show/hide color palette based on any tool being active
+        // Show/hide color palette based on paintbrush tool being active
         colorPalette.classList.toggle('hidden', !isPaintbrushToolActive);
     }
 
@@ -1045,11 +1050,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Add event listeners for tools
-    textToolBtn.addEventListener('click', handleTextTool);
-    marqueeToolBtn.addEventListener('click', handleMarqueeTool);
-    canvas.addEventListener('click', handleCanvasClick);
-    starToolBtn.addEventListener('click', handleStarTool);
-    paintbrushToolBtn.addEventListener('click', handlePaintbrushTool);
+    textToolBtn.addEventListener('click', () => {
+        // Remove active state from eye tool
+        const eyeToolBtn = document.getElementById('eyeToolBtn');
+        if (eyeToolBtn) {
+            eyeToolBtn.classList.remove('border-2', 'border-blue-500');
+        }
+        handleTextTool();
+    });
+
+    marqueeToolBtn.addEventListener('click', () => {
+        // Remove active state from eye tool
+        const eyeToolBtn = document.getElementById('eyeToolBtn');
+        if (eyeToolBtn) {
+            eyeToolBtn.classList.remove('border-2', 'border-blue-500');
+        }
+        handleMarqueeTool();
+    });
+
+    starToolBtn.addEventListener('click', () => {
+        // Remove active state from eye tool
+        const eyeToolBtn = document.getElementById('eyeToolBtn');
+        if (eyeToolBtn) {
+            eyeToolBtn.classList.remove('border-2', 'border-blue-500');
+        }
+        handleStarTool();
+    });
+
+    paintbrushToolBtn.addEventListener('click', () => {
+        // Remove active state from eye tool
+        const eyeToolBtn = document.getElementById('eyeToolBtn');
+        if (eyeToolBtn) {
+            eyeToolBtn.classList.remove('border-2', 'border-blue-500');
+        }
+        handlePaintbrushTool();
+    });
 
     // Add mouse events for star drawing
     canvas.addEventListener('mousedown', (e) => {
@@ -1098,5 +1133,32 @@ document.addEventListener('DOMContentLoaded', () => {
             updateButtonStates();
         }
         editMenu.classList.add('hidden');
+    });
+
+    // Add tool button click handlers
+    tools.forEach(tool => {
+        const toolBtn = document.getElementById(tool.id);
+        if (toolBtn) {
+            toolBtn.addEventListener('click', () => {
+                // Remove active state from all tool buttons
+                tools.forEach(t => {
+                    const btn = document.getElementById(t.id);
+                    if (btn) {
+                        btn.classList.remove('bg-gray-700');
+                        btn.classList.remove('border-2', 'border-blue-500');
+                    }
+                });
+                
+                // Add active state only to clicked tool
+                if (tool.id === 'eyeToolBtn') {
+                    toolBtn.classList.add('border-2', 'border-blue-500');
+                } else {
+                    toolBtn.classList.add('bg-gray-700');
+                }
+                
+                currentTool = tool.name;
+                updateToolSettings();
+            });
+        }
     });
 }); 
