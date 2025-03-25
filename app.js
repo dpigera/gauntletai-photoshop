@@ -49,6 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelHueBtn = document.getElementById('cancelHueBtn');
     const saveHueBtn = document.getElementById('saveHueBtn');
 
+    // Black and White button
+    const blackAndWhiteBtn = document.getElementById('blackAndWhiteBtn');
+
     // Store original image data for resizing
     let originalImage = null;
 
@@ -234,6 +237,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Put the modified image data back on the canvas
         ctx.putImageData(imageData, 0, 0);
+    }
+
+    // Function to apply black and white filter
+    function applyBlackAndWhite() {
+        if (!originalImage) return;
+
+        // Create a temporary canvas for the image data
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(canvas, 0, 0);
+
+        // Get the image data
+        const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        // Convert to black and white using luminance
+        for (let i = 0; i < data.length; i += 4) {
+            // Calculate luminance using standard coefficients
+            const luminance = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            
+            // Set all RGB values to the luminance value
+            data[i] = luminance;     // Red
+            data[i + 1] = luminance; // Green
+            data[i + 2] = luminance; // Blue
+        }
+
+        // Put the modified image data back on the canvas
+        ctx.putImageData(imageData, 0, 0);
+
+        // Save state to history
+        saveToHistory();
+        
+        // Close the filter menu
+        filterMenu.classList.add('hidden');
     }
 
     // Initialize button states
@@ -554,5 +593,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Close dialog
         hueDialog.classList.add('hidden');
+    });
+
+    // Handle Black and White button click
+    blackAndWhiteBtn.addEventListener('click', () => {
+        if (!originalImage) return;
+        applyBlackAndWhite();
     });
 }); 
