@@ -1119,9 +1119,78 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Handle Generate button click
-    generateBtn.addEventListener('click', () => {
+    generateBtn.addEventListener('click', async () => {
         const prompt = document.getElementById('generativePrompt').value;
-        // TODO: Handle generation with OpenAI
+        if (!prompt.trim()) return;
+
+        try {
+            // Show loading indicator
+            ctx.save();
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Draw semi-transparent background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw loading text
+            ctx.font = 'bold 24px Arial';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.fillText('Generating image...', centerX, centerY);
+            ctx.fillText('Please wait', centerX, centerY + 40);
+            
+            // Get the current canvas image as base64
+            const imageData = canvas.toDataURL('image/png');
+            
+            // Prepare the request to OpenAI
+            const response = await fetch('https://api.openai.com/v1/images/generations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + window.env.OPENAI_API_KEY
+                },
+                body: JSON.stringify({
+                    model: "dall-e-3",
+                    prompt: prompt,
+                    n: 1,
+                    size: "1024x1024"
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to generate image');
+            }
+
+            const data = await response.json();
+            
+            // Load and display the generated image
+            const generatedImage = new Image();
+            generatedImage.onload = () => {
+                // Clear the canvas
+                ctx.restore();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw the new image
+                ctx.drawImage(generatedImage, 0, 0, canvas.width, canvas.height);
+                
+                // Save to history
+                saveToHistory();
+            };
+            generatedImage.src = data.data[0].url;
+
+        } catch (error) {
+            console.error('Error generating image:', error);
+            // Show error message on canvas
+            ctx.restore();
+            ctx.font = 'bold 24px Arial';
+            ctx.fillStyle = 'red';
+            ctx.textAlign = 'center';
+            ctx.fillText('Error generating image', centerX, centerY);
+            ctx.fillText('Please try again', centerX, centerY + 40);
+        }
+
+        // Close the dialog
         generativeFillDialog.classList.add('hidden');
     });
 }); 
