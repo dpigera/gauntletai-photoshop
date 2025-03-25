@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const openFileBtn = document.getElementById('openFileBtn');
     const downloadPngBtn = document.getElementById('downloadPngBtn');
     const undoBtn = document.getElementById('undoBtn');
+    const redoBtn = document.getElementById('redoBtn');
     const fileInput = document.getElementById('fileInput');
     const canvas = document.getElementById('mainCanvas');
     const canvasContainer = document.getElementById('canvasContainer');
@@ -56,16 +57,23 @@ document.addEventListener('DOMContentLoaded', () => {
             currentHistoryIndex++;
         }
 
-        // Update undo button state
-        updateUndoButtonState();
+        // Update button states
+        updateButtonStates();
     }
 
-    // Function to update undo button state
-    function updateUndoButtonState() {
-        const hasHistory = history.length > 0 && currentHistoryIndex > 0;
-        undoBtn.disabled = !hasHistory;
-        undoBtn.classList.toggle('opacity-50', !hasHistory);
-        undoBtn.classList.toggle('cursor-not-allowed', !hasHistory);
+    // Function to update button states
+    function updateButtonStates() {
+        // Update undo button state
+        const canUndo = history.length > 0 && currentHistoryIndex > 0;
+        undoBtn.disabled = !canUndo;
+        undoBtn.classList.toggle('opacity-50', !canUndo);
+        undoBtn.classList.toggle('cursor-not-allowed', !canUndo);
+
+        // Update redo button state
+        const canRedo = currentHistoryIndex < history.length - 1;
+        redoBtn.disabled = !canRedo;
+        redoBtn.classList.toggle('opacity-50', !canRedo);
+        redoBtn.classList.toggle('cursor-not-allowed', !canRedo);
     }
 
     // Function to restore state from history
@@ -84,8 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
         img.src = state.imageData;
     }
 
-    // Initialize undo button state
-    updateUndoButtonState();
+    // Initialize button states
+    updateButtonStates();
 
     // Toggle file menu
     fileMenuBtn.addEventListener('click', () => {
@@ -124,7 +132,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentHistoryIndex > 0) {
             currentHistoryIndex--;
             restoreState(currentHistoryIndex);
-            updateUndoButtonState();
+            updateButtonStates();
+        }
+        editMenu.classList.add('hidden');
+    });
+
+    // Handle Redo button click
+    redoBtn.addEventListener('click', () => {
+        if (currentHistoryIndex < history.length - 1) {
+            currentHistoryIndex++;
+            restoreState(currentHistoryIndex);
+            updateButtonStates();
         }
         editMenu.classList.add('hidden');
     });
