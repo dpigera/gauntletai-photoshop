@@ -64,6 +64,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelBlurBtn = document.getElementById('cancelBlurBtn');
     const saveBlurBtn = document.getElementById('saveBlurBtn');
 
+    // Star tool elements
+    const starToolBtn = document.getElementById('starToolBtn');
+
     // Store original image data for resizing
     let originalImage = null;
 
@@ -85,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectionHeight = 0;
     let selectedColor = '#000000'; // Initialize with black
     let textInput = null;
+    let isStarToolActive = false;
 
     // Function to save current state to history
     function saveToHistory() {
@@ -520,6 +524,49 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Function to handle star tool selection
+    function handleStarTool() {
+        isStarToolActive = !isStarToolActive;
+        isTextToolActive = false;
+        isMarqueeToolActive = false;
+        
+        // Update button states
+        starToolBtn.classList.toggle('border-2', isStarToolActive);
+        starToolBtn.classList.toggle('border-blue-500', isStarToolActive);
+        textToolBtn.classList.remove('border-2', 'border-blue-500');
+        marqueeToolBtn.classList.remove('border-2', 'border-blue-500');
+        
+        // Show/hide color palette
+        colorPalette.classList.toggle('hidden', !isStarToolActive);
+    }
+
+    // Function to draw star
+    function drawStar(centerX, centerY, size) {
+        const spikes = 5;
+        const outerRadius = size;
+        const innerRadius = size / 2;
+        
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(centerX, centerY);
+        ctx.moveTo(0, -outerRadius);
+        
+        for (let i = 0; i < spikes; i++) {
+            ctx.rotate(Math.PI / spikes);
+            ctx.lineTo(0, -innerRadius);
+            ctx.rotate(Math.PI / spikes);
+            ctx.lineTo(0, -outerRadius);
+        }
+        
+        ctx.closePath();
+        ctx.fillStyle = selectedColor;
+        ctx.fill();
+        ctx.restore();
+        
+        // Save to history
+        saveToHistory();
+    }
+
     // Initialize button states
     updateButtonStates();
 
@@ -904,4 +951,36 @@ document.addEventListener('DOMContentLoaded', () => {
     textToolBtn.addEventListener('click', handleTextTool);
     marqueeToolBtn.addEventListener('click', handleMarqueeTool);
     canvas.addEventListener('click', handleCanvasClick);
+    starToolBtn.addEventListener('click', handleStarTool);
+
+    // Add mouse events for star drawing
+    canvas.addEventListener('mousedown', (e) => {
+        if (!isStarToolActive) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Save current canvas state
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // Draw star
+        drawStar(x, y, 30);
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (!isStarToolActive) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        if (e.buttons === 1) { // Left mouse button is pressed
+            // Save current canvas state
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            
+            // Draw star
+            drawStar(x, y, 30);
+        }
+    });
 }); 
