@@ -441,37 +441,58 @@ document.addEventListener('DOMContentLoaded', () => {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        // Create text input element
-        textInput = document.createElement('input');
-        textInput.type = 'text';
-        textInput.className = 'absolute border-none outline-none bg-transparent text-black text-lg';
-        textInput.style.left = `${x}px`;
-        textInput.style.top = `${y}px`;
-        textInput.style.fontSize = '20px';
-        textInput.style.fontFamily = 'Arial';
-        textInput.style.color = selectedColor;
-        textInput.style.zIndex = '1000';
+        // Create a temporary input element for text entry
+        const tempInput = document.createElement('input');
+        tempInput.type = 'text';
+        tempInput.className = 'fixed border-none outline-none bg-transparent text-transparent';
+        tempInput.style.position = 'fixed';
+        tempInput.style.left = '-9999px';
+        tempInput.style.top = '-9999px';
+        tempInput.style.zIndex = '-1';
+        document.body.appendChild(tempInput);
+        tempInput.focus();
 
-        // Add input to canvas container
-        canvasContainer.appendChild(textInput);
-        textInput.focus();
-
-        // Handle text input completion
-        textInput.addEventListener('blur', () => {
-            if (textInput.value.trim()) {
-                // Draw text on canvas
-                ctx.font = '20px Arial';
-                ctx.fillStyle = selectedColor;
-                ctx.fillText(textInput.value, x, y);
-                saveState();
+        // Function to draw text on canvas
+        function drawText(text) {
+            if (!text.trim()) return;
+            
+            // Clear the canvas and redraw the original image
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (originalImage) {
+                ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
             }
-            textInput.remove();
+            
+            // Draw the new text
+            ctx.font = '20px Arial';
+            ctx.fillStyle = selectedColor;
+            ctx.fillText(text, x, y);
+            
+            // Save to history
+            saveToHistory();
+        }
+
+        // Handle text input
+        tempInput.addEventListener('input', () => {
+            drawText(tempInput.value);
         });
 
         // Handle Enter key
-        textInput.addEventListener('keydown', (e) => {
+        tempInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
-                textInput.blur();
+                const finalText = tempInput.value;
+                tempInput.remove();
+                if (finalText.trim()) {
+                    drawText(finalText);
+                }
+            }
+        });
+
+        // Handle blur (clicking outside)
+        tempInput.addEventListener('blur', () => {
+            const finalText = tempInput.value;
+            tempInput.remove();
+            if (finalText.trim()) {
+                drawText(finalText);
             }
         });
     }
