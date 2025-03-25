@@ -27,8 +27,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelSizeBtn = document.getElementById('cancelSizeBtn');
     const saveSizeBtn = document.getElementById('saveSizeBtn');
 
+    // Brightness & Contrast dialog elements
+    const adjustBrightnessBtn = document.getElementById('adjustBrightnessBtn');
+    const brightnessDialog = document.getElementById('brightnessDialog');
+    const brightnessSlider = document.getElementById('brightnessSlider');
+    const contrastSlider = document.getElementById('contrastSlider');
+    const brightnessValue = document.getElementById('brightnessValue');
+    const contrastValue = document.getElementById('contrastValue');
+    const cancelBrightnessBtn = document.getElementById('cancelBrightnessBtn');
+    const saveBrightnessBtn = document.getElementById('saveBrightnessBtn');
+
     // Store original image data for resizing
     let originalImage = null;
+
+    // Store original canvas state for brightness/contrast
+    let originalCanvasState = null;
 
     // History management
     let history = [];
@@ -90,6 +103,44 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.drawImage(img, 0, 0);
         };
         img.src = state.imageData;
+    }
+
+    // Function to apply brightness and contrast
+    function applyBrightnessContrast(brightness, contrast) {
+        if (!originalCanvasState) return;
+
+        // Create a temporary canvas for the image data
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(originalCanvasState, 0, 0);
+
+        // Get the image data
+        const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        // Apply brightness and contrast
+        for (let i = 0; i < data.length; i += 4) {
+            // Apply brightness
+            data[i] += brightness;     // Red
+            data[i + 1] += brightness; // Green
+            data[i + 2] += brightness; // Blue
+
+            // Apply contrast
+            const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+            data[i] = factor * (data[i] - 128) + 128;     // Red
+            data[i + 1] = factor * (data[i + 1] - 128) + 128; // Green
+            data[i + 2] = factor * (data[i + 2] - 128) + 128; // Blue
+
+            // Clamp values to valid range
+            data[i] = Math.min(255, Math.max(0, data[i]));
+            data[i + 1] = Math.min(255, Math.max(0, data[i + 1]));
+            data[i + 2] = Math.min(255, Math.max(0, data[i + 2]));
+        }
+
+        // Put the modified image data back on the canvas
+        ctx.putImageData(imageData, 0, 0);
     }
 
     // Initialize button states
@@ -291,5 +342,59 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Close dialog
         sizeDialog.classList.add('hidden');
+    });
+
+    // Handle Adjust Brightness & Contrast button click
+    adjustBrightnessBtn.addEventListener('click', () => {
+        if (!originalImage) return;
+        
+        // Store current canvas state
+        originalCanvasState = document.createElement('canvas');
+        originalCanvasState.width = canvas.width;
+        originalCanvasState.height = canvas.height;
+        originalCanvasState.getContext('2d').drawImage(canvas, 0, 0);
+        
+        // Reset sliders
+        brightnessSlider.value = 0;
+        contrastSlider.value = 0;
+        brightnessValue.textContent = '0%';
+        contrastValue.textContent = '0%';
+        
+        // Show dialog
+        brightnessDialog.classList.remove('hidden');
+        imageMenu.classList.add('hidden');
+    });
+
+    // Handle brightness slider change
+    brightnessSlider.addEventListener('input', () => {
+        const brightness = parseInt(brightnessSlider.value);
+        const contrast = parseInt(contrastSlider.value);
+        brightnessValue.textContent = `${brightness}%`;
+        applyBrightnessContrast(brightness, contrast);
+    });
+
+    // Handle contrast slider change
+    contrastSlider.addEventListener('input', () => {
+        const brightness = parseInt(brightnessSlider.value);
+        const contrast = parseInt(contrastSlider.value);
+        contrastValue.textContent = `${contrast}%`;
+        applyBrightnessContrast(brightness, contrast);
+    });
+
+    // Handle Cancel button click for brightness dialog
+    cancelBrightnessBtn.addEventListener('click', () => {
+        if (originalCanvasState) {
+            ctx.drawImage(originalCanvasState, 0, 0);
+        }
+        brightnessDialog.classList.add('hidden');
+    });
+
+    // Handle Save button click for brightness dialog
+    saveBrightnessBtn.addEventListener('click', () => {
+        // Save state to history
+        saveToHistory();
+        
+        // Close dialog
+        brightnessDialog.classList.add('hidden');
     });
 }); 
