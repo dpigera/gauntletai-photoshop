@@ -37,10 +37,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelBrightnessBtn = document.getElementById('cancelBrightnessBtn');
     const saveBrightnessBtn = document.getElementById('saveBrightnessBtn');
 
+    // Hue & Saturation dialog elements
+    const adjustHueBtn = document.getElementById('adjustHueBtn');
+    const hueDialog = document.getElementById('hueDialog');
+    const hueSlider = document.getElementById('hueSlider');
+    const saturationSlider = document.getElementById('saturationSlider');
+    const hueValue = document.getElementById('hueValue');
+    const saturationValue = document.getElementById('saturationValue');
+    const cancelHueBtn = document.getElementById('cancelHueBtn');
+    const saveHueBtn = document.getElementById('saveHueBtn');
+
     // Store original image data for resizing
     let originalImage = null;
 
-    // Store original canvas state for brightness/contrast
+    // Store original canvas state for brightness/contrast and hue/saturation
     let originalCanvasState = null;
 
     // History management
@@ -137,6 +147,87 @@ document.addEventListener('DOMContentLoaded', () => {
             data[i] = Math.min(255, Math.max(0, data[i]));
             data[i + 1] = Math.min(255, Math.max(0, data[i + 1]));
             data[i + 2] = Math.min(255, Math.max(0, data[i + 2]));
+        }
+
+        // Put the modified image data back on the canvas
+        ctx.putImageData(imageData, 0, 0);
+    }
+
+    // Function to apply hue and saturation
+    function applyHueSaturation(hue, saturation) {
+        if (!originalCanvasState) return;
+
+        // Create a temporary canvas for the image data
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(originalCanvasState, 0, 0);
+
+        // Get the image data
+        const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        // Convert hue to radians
+        const hueRad = (hue * Math.PI) / 180;
+
+        // Apply hue and saturation
+        for (let i = 0; i < data.length; i += 4) {
+            // Convert RGB to HSL
+            const r = data[i] / 255;
+            const g = data[i + 1] / 255;
+            const b = data[i + 2] / 255;
+
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+
+            if (max === min) {
+                h = s = 0;
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+
+            // Apply hue adjustment
+            h = (h + hueRad / (2 * Math.PI)) % 1;
+            if (h < 0) h += 1;
+
+            // Apply saturation adjustment
+            s = Math.max(0, Math.min(1, s * (1 + saturation / 100)));
+
+            // Convert back to RGB
+            let r2, g2, b2;
+            if (s === 0) {
+                r2 = g2 = b2 = l;
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+
+                r2 = hue2rgb(p, q, h + 1/3);
+                g2 = hue2rgb(p, q, h);
+                b2 = hue2rgb(p, q, h - 1/3);
+            }
+
+            // Update RGB values
+            data[i] = Math.round(r2 * 255);
+            data[i + 1] = Math.round(g2 * 255);
+            data[i + 2] = Math.round(b2 * 255);
         }
 
         // Put the modified image data back on the canvas
@@ -396,5 +487,59 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Close dialog
         brightnessDialog.classList.add('hidden');
+    });
+
+    // Handle Adjust Hue & Saturation button click
+    adjustHueBtn.addEventListener('click', () => {
+        if (!originalImage) return;
+        
+        // Store current canvas state
+        originalCanvasState = document.createElement('canvas');
+        originalCanvasState.width = canvas.width;
+        originalCanvasState.height = canvas.height;
+        originalCanvasState.getContext('2d').drawImage(canvas, 0, 0);
+        
+        // Reset sliders
+        hueSlider.value = 0;
+        saturationSlider.value = 0;
+        hueValue.textContent = '0°';
+        saturationValue.textContent = '0%';
+        
+        // Show dialog
+        hueDialog.classList.remove('hidden');
+        imageMenu.classList.add('hidden');
+    });
+
+    // Handle hue slider change
+    hueSlider.addEventListener('input', () => {
+        const hue = parseInt(hueSlider.value);
+        const saturation = parseInt(saturationSlider.value);
+        hueValue.textContent = `${hue}°`;
+        applyHueSaturation(hue, saturation);
+    });
+
+    // Handle saturation slider change
+    saturationSlider.addEventListener('input', () => {
+        const hue = parseInt(hueSlider.value);
+        const saturation = parseInt(saturationSlider.value);
+        saturationValue.textContent = `${saturation}%`;
+        applyHueSaturation(hue, saturation);
+    });
+
+    // Handle Cancel button click for hue dialog
+    cancelHueBtn.addEventListener('click', () => {
+        if (originalCanvasState) {
+            ctx.drawImage(originalCanvasState, 0, 0);
+        }
+        hueDialog.classList.add('hidden');
+    });
+
+    // Handle Save button click for hue dialog
+    saveHueBtn.addEventListener('click', () => {
+        // Save state to history
+        saveToHistory();
+        
+        // Close dialog
+        hueDialog.classList.add('hidden');
     });
 }); 
