@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Get DOM elements
     const fileMenuBtn = document.getElementById('fileMenuBtn');
     const fileMenu = document.getElementById('fileMenu');
+    const editMenuBtn = document.getElementById('editMenuBtn');
+    const editMenu = document.getElementById('editMenu');
     const openFileBtn = document.getElementById('openFileBtn');
     const downloadPngBtn = document.getElementById('downloadPngBtn');
     const fileInput = document.getElementById('fileInput');
@@ -16,12 +18,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggle file menu
     fileMenuBtn.addEventListener('click', () => {
         fileMenu.classList.toggle('hidden');
+        editMenu.classList.add('hidden'); // Close other menu
     });
 
-    // Close menu when clicking outside
+    // Toggle edit menu
+    editMenuBtn.addEventListener('click', () => {
+        editMenu.classList.toggle('hidden');
+        fileMenu.classList.add('hidden'); // Close other menu
+    });
+
+    // Close menus when clicking outside
     document.addEventListener('click', (e) => {
-        if (!fileMenuBtn.contains(e.target) && !fileMenu.contains(e.target)) {
+        if (!fileMenuBtn.contains(e.target) && !fileMenu.contains(e.target) &&
+            !editMenuBtn.contains(e.target) && !editMenu.contains(e.target)) {
             fileMenu.classList.add('hidden');
+            editMenu.classList.add('hidden');
         }
     });
 
