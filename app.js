@@ -100,6 +100,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const aiMenu = document.getElementById('aiMenu');
 
+    // Get Generative Fill dialog elements
+    const generativeFillDialog = document.getElementById('generativeFillDialog');
+    const generativeFillBtn = document.getElementById('generativeFillBtn');
+    const cancelGenerateBtn = document.getElementById('cancelGenerateBtn');
+    const generateBtn = document.getElementById('generateBtn');
+
     // Function to hide all menus
     function hideAllMenus() {
         fileMenu.classList.add('hidden');
@@ -1099,5 +1105,23 @@ document.addEventListener('DOMContentLoaded', () => {
             updateButtonStates();
         }
         editMenu.classList.add('hidden');
+    });
+
+    // Handle Generative Fill button click
+    generativeFillBtn.addEventListener('click', () => {
+        generativeFillDialog.classList.remove('hidden');
+        aiMenu.classList.add('hidden');
+    });
+
+    // Handle Cancel button click
+    cancelGenerateBtn.addEventListener('click', () => {
+        generativeFillDialog.classList.add('hidden');
+    });
+
+    // Handle Generate button click
+    generateBtn.addEventListener('click', () => {
+        const prompt = document.getElementById('generativePrompt').value;
+        // TODO: Handle generation with OpenAI
+        generativeFillDialog.classList.add('hidden');
     });
 }); 
